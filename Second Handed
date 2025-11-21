@@ -17,7 +17,6 @@ buyer_data AS (
             WHEN EXTRACT(YEAR FROM SYSDATE) - EXTRACT(YEAR FROM ep.birthday)  BETWEEN 10 AND 19 THEN '10-19'
             WHEN EXTRACT(YEAR FROM SYSDATE) - EXTRACT(YEAR FROM ep.birthday) BETWEEN 20 AND 29 THEN '20-29'
             ELSE 'Other' END) AS age_range,
-        COUNT(DISTINCT s.g_no) AS distinct_products,
         COUNT(*) AS purchase_count,
         SUM(CASE WHEN s.g_no IN (SELECT g_no FROM goods_list) THEN 1 ELSE 0 END) AS second_purchase_count,
         COALESCE(SUM(s.money * s.g_num), 0) AS GMV,
@@ -45,7 +44,7 @@ SELECT
     SUM(GMV_second) AS total_GMV_second,
     CASE WHEN SUM(GMV) > 0 THEN SUM(GMV_second) / NULLIF(SUM(GMV), 0) ELSE 0 END AS ratio,
     SUM(CASE WHEN purchase_count >= 2 THEN 1 ELSE 0 END) AS total_repurchase,
-    SUM(CASE WHEN second_purchase_count >= 2 THEN 1 ELSE 0 END) AS second_hand_repurchase
+    SUM(CASE WHEN second_ >= 2 THEN 1 ELSE 0 END) AS second_hand_repurchase
 FROM buyer_data
 GROUP BY class, name, sex, age_range
 HAVING 
