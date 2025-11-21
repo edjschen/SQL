@@ -1,0 +1,54 @@
+-- Second Handed
+
+WITH goods_list AS (
+    SELECT g_no
+    FROM data.goods_file 
+    WHERE condition <> 'B'
+        OR name LIKE '%used%'
+        OR name LIKE '%second_handed%'
+),
+buyer_data AS (
+    SELECT 
+        s.id,
+        MIN(SUBSTR(s.class, 1, 4)) AS class,
+        MIN(map.g_codename) AS name,
+        MIN(ep.sex) AS sex,
+        MIN(CASE 
+            WHEN EXTRACT(YEAR FROM SYSDATE) - EXTRACT(YEAR FROM ep.birthday)  BETWEEN 10 AND 19 THEN '10-19'
+            WHEN EXTRACT(YEAR FROM SYSDATE) - EXTRACT(YEAR FROM ep.birthday) BETWEEN 20 AND 29 THEN '20-29'
+            ELSE 'Other' END) AS age_range,
+        COUNT(DISTINCT s.g_no) AS distinct_products,
+        COUNT(*) AS purchase_count,
+        SUM(CASE WHEN s.g_no IN (SELECT g_no FROM goods_list) THEN 1 ELSE 0 END) AS second_purchase_count,
+        COALESCE(SUM(s.money * s.g_num), 0) AS GMV,
+        COALESCE(SUM(CASE WHEN s.g_no IN (SELECT g_no FROM goods_list) 
+            THEN s.money * s.g_num ELSE 0 END), 0) AS GMV_second
+    FROM data.sold_record s
+    LEFT JOIN data.goods_map map ON SUBSTR(s.class, 1, 4) = map.class
+    LEFT JOIN data.profile ep ON s.id = ep.ctrl_rowid
+    WHERE s.date LIKE '2023%'
+        AND SUBSTR(s.class, 1, 4) IN ('0008', '0011', '0021', '0022', '0023')
+        AND s.money < 999999
+-- Only purchase the first 4 months
+        AND TO_NUMBER(SUBSTR(s.date, 5, 2)) < 5
+    GROUP BY s.id
+    HAVING COUNT(*) > 1
+)
+SELECT 
+    class,
+    name,
+    sex,
+    age_range,
+    COUNT(*) AS total_buyers,
+    COUNT(DISTINCT id) AS distinct_buyer_count,
+    SUM(GMV) AS total_GMV,
+    SUM(GMV_second) AS total_GMV_second,
+    CASE WHEN SUM(GMV) > 0 THEN SUM(GMV_second) / NULLIF(SUM(GMV), 0) ELSE 0 END AS ratio,
+    SUM(CASE WHEN purchase_count >= 2 THEN 1 ELSE 0 END) AS total_repurchase,
+    SUM(CASE WHEN second_purchase_count >= 2 THEN 1 ELSE 0 END) AS second_hand_repurchase
+FROM buyer_data
+GROUP BY class, name, sex, age_range
+HAVING 
+    SUM(GMV_second) / NULLIF(SUM(GMV), 0) >= 0.9
+    AND SUM(GMV) > 10000
+ORDER BY total_GMV DESC;
