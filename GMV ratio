@@ -47,7 +47,7 @@ WITH base_data AS (
         SELECT * FROM data.sold_record_archive
         UNION ALL
         SELECT * FROM data.sold_record
-    ) cd ON st.transaction_no = cd.transaction_no
+    ) cd ON st.transaction_no = cd.transaction_no -- same as USING (transaction_no)
     WHERE st.deliver_way IS NOT NULL
 ),
 aggregated AS (
