@@ -22,3 +22,44 @@ POSTGRESQL:
 -- CAST AS TIME:      CAST('14:30:45' AS TIME)  -- 14:30:45
 -- CAST AS TIMESTAMP: Same
 */
+
+
+WITH date_dim AS (
+    SELECT DATE '2024-01-01' + LEVEL - 1 AS date_val
+    FROM dual
+    CONNECT BY LEVEL <= 151
+),
+tagged AS (
+    SELECT 
+        st.seller_id,
+        st.price,
+        TRUNC(st.insert_time) AS dt,
+        CASE WHEN st.amount <= 500 THEN '<=500'
+             WHEN st.amount <= 1000 THEN '501-1000'
+             ELSE '1001+'
+        END AS val_range
+    FROM data.sold_transaction st
+    WHERE st.insert_time >= DATE '2024-01-01'
+      AND st.insert_time < DATE '2024-06-01'
+      AND NOT EXISTS (
+          SELECT 1 FROM record r 
+          WHERE r.ctrl_no = st.ctrl_no AND r.g_no = st.g_no
+      )
+      AND REGEXP_LIKE(st.tag, 'mid|large')
+),
+aggregated AS (
+    SELECT 
+        d.date_val,
+        d.date_val - TRUNC(SYSDATE) AS days_diff,
+        t.val_range,
+        COUNT(*) AS record_count,
+        COUNT(*) * 100.0 / SUM(COUNT(*)) OVER () AS pct
+    FROM date_dim d
+    LEFT JOIN tagged t ON t.dt = d.date_val
+    WHERE t.dt IS NOT NULL
+    GROUP BY d.date_val, t.val_range
+)
+SELECT *
+FROM aggregated
+WHERE pct > 0.1
+ORDER BY date_val, val_range
