@@ -1,3 +1,21 @@
+/*
+FUNCTIONS BY SQL DIALECT
+==============================
+-- String concatenation:
+CONCAT(str1, str2)           -- MySQL, PostgreSQL, Oracle (2 args only)
+str1 || str2 || str3         -- Oracle, PostgreSQL only
+
+-- Cartesian product:
+FROM table1 CROSS JOIN table2
+
+-- Window functions
+-- Previous row: LAG(column, offset, default) OVER (PARTITION BY group ORDER BY sort)
+-  Aggregates:   AGG_FUNC(column) OVER (PARTITION BY group ORDER BY sort)
+
+-- Scalar subquery:
+column / (SELECT AGG_FUNC(column) FROM table WHERE condition)
+*/
+
 -- Second Handed
 
 WITH goods_list AS (
