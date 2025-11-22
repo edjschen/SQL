@@ -6,7 +6,10 @@ MySQL:
   - Extract week: WEEK(date)
   - Extract month: MONTH(date)
   - TRUNC() does NOT work in MySQL (use DATE() instead)
-  - Format date/time: DATE_FORMAT(timestamp, '%Y-%m-%d')
+  - Format date/time: DATE_FORMAT(timestamp, '%Y%m%d') → '20240101'
+                      DATE_FORMAT(timestamp, '%Y-%m-%d') → '2024-01-01'
+                      DATE_FORMAT(timestamp, '%H:%i:%s') → '14:23:45'
+                      DATE_FORMAT(timestamp, '%W') → 'Monday'
 
 Presto/Trino/Athena:
   - Convert to date: DATE(timestamp) or CAST(timestamp AS DATE)
@@ -14,14 +17,21 @@ Presto/Trino/Athena:
   - Extract parts: EXTRACT(YEAR|MONTH|HOUR|DAY FROM timestamp)
   - Parse string: DATE_PARSE('2024-11-21', '%Y-%m-%d')
   - Truncate: DATE_TRUNC('day'|'week'|'month', timestamp)
-  - Format date/time: DATE_FORMAT(timestamp, '%Y-%m-%d')
+  - Format date/time: DATE_FORMAT(DATE '2024-01-01', '%Y%m%d') → '2024-01-01'
+                      DATE_FORMAT(DATE '2024-01-01', '%Y-%m-%d') → '20240101'
+                      DATE_FORMAT(DATE '2024-01-01', '%H:%i:%S') → '14:23:45'
+                      DATE_FORMAT(DATE '2024-01-01', '%W') → 'Monday'
 
 PostgreSQL:
   - Similar to Presto, plus TO_DATE(string, 'YYYY-MM-DD')
   - Parse timestamp: TO_TIMESTAMP(string, 'YYYY-MM-DD"T"HH24:MI:SS')
   - Truncate: TRUNC(timestamp) -- Returns date portion
   - Use PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY col)
-  - Format date/time: TO_CHAR(timestamp, 'YYYY-MM-DD') 
+  - Format date/time: TO_CHAR(timestamp, 'YYYYMMDD') → '20240101'
+                      TO_CHAR(timestamp, 'YYYY-MM-DD') → '2024-01-01'
+                      TO_CHAR(timestamp, 'HH24:MI:SS') → '14:23:45'
+                      TO_CHAR(DATE '2024-01-01', 'Day') → 'Monday'
+                      TO_CHAR(DATE '2024-01-01', 'Month') → 'January'
 */
 
 WITH base_data AS (
