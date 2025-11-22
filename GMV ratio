@@ -6,6 +6,7 @@ MySQL:
   - Extract week: WEEK(date)
   - Extract month: MONTH(date)
   - TRUNC() does NOT work in MySQL (use DATE() instead)
+  - Format date/time: DATE_FORMAT(timestamp, '%Y-%m-%d')
 
 Presto/Trino/Athena:
   - Convert to date: DATE(timestamp) or CAST(timestamp AS DATE)
@@ -13,12 +14,14 @@ Presto/Trino/Athena:
   - Extract parts: EXTRACT(YEAR|MONTH|HOUR|DAY FROM timestamp)
   - Parse string: DATE_PARSE('2024-11-21', '%Y-%m-%d')
   - Truncate: DATE_TRUNC('day'|'week'|'month', timestamp)
+  - Format date/time: DATE_FORMAT(timestamp, '%Y-%m-%d')
 
 PostgreSQL:
   - Similar to Presto, plus TO_DATE(string, 'YYYY-MM-DD')
   - Parse timestamp: TO_TIMESTAMP(string, 'YYYY-MM-DD"T"HH24:MI:SS')
   - Truncate: TRUNC(timestamp) -- Returns date portion
   - Use PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY col)
+  - Format date/time: TO_CHAR(timestamp, 'YYYY-MM-DD') 
 */
 
 WITH base_data AS (
