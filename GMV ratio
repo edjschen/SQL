@@ -10,7 +10,7 @@ MySQL:
 Presto/Trino/Athena:
   - Convert to date: DATE(timestamp) or CAST(timestamp AS DATE)
   - Extract week: WEEK_OF_YEAR(date)
-  - Extract parts: EXTRACT(MONTH|HOUR|DAY FROM timestamp)
+  - Extract parts: EXTRACT(YEAR|MONTH|HOUR|DAY FROM timestamp)
   - Parse string: DATE_PARSE('2024-11-21', '%Y-%m-%d')
   - Truncate: DATE_TRUNC('day'|'week'|'month', timestamp)
 
