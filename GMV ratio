@@ -1,0 +1,66 @@
+-- Presto/Trino/Athena SQL
+/*
+DATE FUNCTIONS BY SQL DIALECT
+==============================
+MySQL:
+  - Convert to date: DATE(timestamp)
+  - Extract week: WEEK(date)
+  - Extract month: MONTH(date)
+  - TRUNC() does NOT work in MySQL (use DATE() instead)
+
+Presto/Trino/Athena:
+  - Convert to date: DATE(timestamp) or CAST(timestamp AS DATE)
+  - Extract week: WEEK_OF_YEAR(date)
+  - Extract parts: EXTRACT(MONTH|HOUR|DAY FROM timestamp)
+  - Parse string: DATE_PARSE('2024-11-21', '%Y-%m-%d')
+  - Truncate: DATE_TRUNC('day'|'week'|'month', timestamp)
+
+PostgreSQL:
+  - Similar to Presto, plus TO_DATE(string, 'YYYY-MM-DD')
+  - Parse timestamp: TO_TIMESTAMP(string, 'YYYY-MM-DD"T"HH24:MI:SS')
+  - Truncate: TRUNC(timestamp) -- Returns date portion
+  - Use PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY col)
+*/
+
+WITH base_data AS (
+    SELECT 
+        region,
+        DATE(st.insert_time) AS date,
+        WEEK_OF_YEAR(st.insert_time) AS week,  -- For Presto/Trino/Athena
+        LPAD(CAST(EXTRACT(MONTH FROM st.insert_time) AS VARCHAR), 2, '0') AS month,
+        st.deliver_way,
+        ROUND(COALESCE(st.amount * cd.g_num, 0)) AS gmv
+    FROM data.transaction st
+    LEFT JOIN (
+        SELECT * FROM data.sold_record_archive
+        UNION ALL
+        SELECT * FROM data.sold_record
+    ) cd ON st.transaction_no = cd.transaction_no
+    WHERE st.deliver_way IS NOT NULL
+),
+aggregated AS (
+    SELECT 
+        region,
+        date,
+        week,
+        month,
+        SUM(gmv) AS gmv,
+        SUM(CASE WHEN deliver_way = 'International' THEN gmv ELSE 0 END) AS gmv_international
+    FROM base_data
+    GROUP BY region, date, week, month
+),
+calc AS (
+    SELECT
+        *,
+        SUM(gmv_international) OVER (PARTITION BY region, month) 
+        / NULLIF(SUM(gmv) OVER (PARTITION BY region, month), 0) AS ratio
+    FROM aggregated
+)
+SELECT *
+FROM calc
+WHERE ratio >= (
+    SELECT APPROX_PERCENTILE(ratio, 0.7)  -- Use PERCENTILE_CONT for PostgreSQL
+    FROM calc
+    WHERE ratio IS NOT NULL
+)
+ORDER BY region, date;
