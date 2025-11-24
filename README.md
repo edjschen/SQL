@@ -1,2 +1,2 @@
 # SQL
-Coding Sample for SQL
+Sample code for SQL
