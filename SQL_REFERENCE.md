@@ -4,18 +4,12 @@ Quick reference for syntax differences across MySQL, Oracle, PostgreSQL, and Pre
 
 ---
 
-## 🔢 Type Casting
+## Type Casting
 
 ### CAST AS FLOAT
 ```sql
--- MySQL
+-- MySQL, Oracle, PostgreSQL
 CAST('99.95' AS FLOAT)  -- 99.95
-
--- Oracle  
-CAST('99.95' AS FLOAT)  -- Same
-
--- PostgreSQL
-CAST('99.95' AS FLOAT)  -- Same
 ```
 
 ### CAST AS DOUBLE
@@ -35,10 +29,7 @@ CAST('123.456' AS DOUBLE PRECISION)  -- 123.456
 -- MySQL
 CAST(99.99 AS SIGNED)  -- 100
 
--- Oracle
-CAST(99.99 AS INT)  -- 99
-
--- PostgreSQL
+-- Oracle, PostgreSQL
 CAST(99.99 AS INT)  -- 100
 ```
 
@@ -56,19 +47,13 @@ CAST('14:30:45' AS TIME)  -- 14:30:45
 
 ### CAST AS TIMESTAMP
 ```sql
--- MySQL
+-- MySQL, Oracle, PostgreSQL
 CAST('2024-01-15 14:30:45' AS TIMESTAMP)  -- 2024-01-15 14:30:45
-
--- Oracle
-Same
-
--- PostgreSQL
-Same
 ```
 
 ---
 
-## 📅 Date Functions
+## Date Functions
 
 ### MySQL
 - **Convert to date**: `DATE(timestamp)`
@@ -113,7 +98,7 @@ Same
 
 ---
 
-## 🔗 String & Other Functions
+## String & Other Functions
 
 ### String Concatenation
 ```sql
@@ -146,9 +131,3 @@ AGG_FUNC(column) OVER (PARTITION BY group1, group2 ORDER BY sort)
 ```sql
 column / (SELECT AGG_FUNC(column) FROM table WHERE condition)
 ```
-
----
-
-## 📚 Related Files
-
-- **[README.md](README.md)** - Query documentation and business context
