@@ -16,8 +16,6 @@ FROM table1 CROSS JOIN table2
 column / (SELECT AGG_FUNC(column) FROM table WHERE condition)
 */
 
--- Second Handed
-
 WITH goods_list AS (
     SELECT g_no
     FROM data.goods_file 
@@ -55,13 +53,12 @@ SELECT
     name,
     sex,
     age_range,
-    COUNT(*) AS total_buyers,
     COUNT(DISTINCT id) AS distinct_buyer_count,
     SUM(GMV) AS total_GMV,
     SUM(GMV_second) AS total_GMV_second,
-    CASE WHEN SUM(GMV) > 0 THEN SUM(GMV_second) / NULLIF(SUM(GMV), 0) ELSE 0 END AS ratio,
+    SUM(GMV_second) / NULLIF(SUM(GMV), 0) AS ratio,
     SUM(CASE WHEN purchase_count >= 2 THEN 1 ELSE 0 END) AS total_repurchase,
-    SUM(CASE WHEN second_purchase_count >= 2 THEN 1 ELSE 0 END)
+    SUM(CASE WHEN second_purchase_count >= 1 THEN 1 ELSE 0 END) AS second_hand_repurchase
 FROM buyer_data
 GROUP BY class, name, sex, age_range
 HAVING 
