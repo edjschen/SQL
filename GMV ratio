@@ -34,7 +34,12 @@ PostgreSQL:
                       TO_CHAR(DATE '2024-01-01', 'Month') → 'January'
 */
 
-WITH base_data AS (
+WITH sold_combined AS (
+    SELECT * FROM data.sold_record_archive
+    UNION ALL
+    SELECT * FROM data.sold_record
+),
+base_data AS (
     SELECT 
         region,
         DATE(st.insert_time) AS date,
@@ -43,14 +48,9 @@ WITH base_data AS (
         st.deliver_way,
         COALESCE(ROUND(st.amount * cd.g_num), 0) AS gmv
     FROM data.transaction st
-    LEFT JOIN (
-        SELECT * FROM data.sold_record_archive
-        UNION ALL
-        SELECT * FROM data.sold_record
-    ) cd ON st.transaction_no = cd.transaction_no -- same as USING (transaction_no)
+    LEFT JOIN sold_combined cd ON st.transaction_no = cd.transaction_no  -- same as USING (transaction_no)
     WHERE st.deliver_way IS NOT NULL
            AND st.amount IS NOT NULL
-           AND cd.g_num IS NOT NULL
 ),
 aggregated AS (
     SELECT 
@@ -59,22 +59,18 @@ aggregated AS (
         week,
         month,
         SUM(gmv) AS gmv,
-        SUM(CASE WHEN deliver_way = 'International' THEN gmv ELSE 0 END) AS gmv_international
+        SUM(CASE WHEN deliver_way = 'International' THEN gmv ELSE 0 END) AS gmv_international,
+        SUM(CASE WHEN deliver_way = 'International' THEN gmv ELSE 0 END) / NULLIF(SUM(gmv), 0) AS ratio
     FROM base_data
     GROUP BY region, date, week, month
 ),
-calc AS (
-    SELECT
-        *,
-        SUM(gmv_international) OVER (PARTITION BY region, month) 
-        / NULLIF(SUM(gmv) OVER (PARTITION BY region, month), 0) AS ratio
+percentile_threshold AS (
+    SELECT APPROX_PERCENTILE(ratio, 0.7) AS p70   -- Use PERCENTILE_CONT for PostgreSQL
     FROM aggregated
-)
-SELECT *
-FROM calc
-WHERE ratio >= (
-    SELECT APPROX_PERCENTILE(ratio, 0.7)  -- Use PERCENTILE_CONT for PostgreSQL
-    FROM calc
     WHERE ratio IS NOT NULL
 )
-ORDER BY region, date;
+SELECT a.*
+FROM aggregated a
+CROSS JOIN percentile_threshold pt
+WHERE a.ratio >= pt.p70
+ORDER BY a.region, a.date;
