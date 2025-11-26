@@ -1,7 +1,4 @@
-# SQL
-Sample code for SQL
-
-# Sales Analytics SQL Repository
+# SQL Sample code - Sales Analytics SQL Repository
 
 Production SQL queries for analyzing buyer behavior, delivery performance, and transaction patterns across Oracle and Presto/Trino databases.
 
