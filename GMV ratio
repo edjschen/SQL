@@ -41,7 +41,7 @@ WITH base_data AS (
         WEEK_OF_YEAR(st.insert_time) AS week,  -- For Presto/Trino/Athena
         LPAD(CAST(EXTRACT(MONTH FROM st.insert_time) AS VARCHAR), 2, '0') AS month,
         st.deliver_way,
-        ROUND(COALESCE(st.amount * cd.g_num, 0)) AS gmv
+        COALESCE(ROUND(st.amount * cd.g_num), 0) AS gmv
     FROM data.transaction st
     LEFT JOIN (
         SELECT * FROM data.sold_record_archive
@@ -49,6 +49,8 @@ WITH base_data AS (
         SELECT * FROM data.sold_record
     ) cd ON st.transaction_no = cd.transaction_no -- same as USING (transaction_no)
     WHERE st.deliver_way IS NOT NULL
+           AND st.amount IS NOT NULL
+           AND cd.g_num IS NOT NULL
 ),
 aggregated AS (
     SELECT 
