@@ -42,21 +42,20 @@ tagged AS (
     WHERE st.insert_time >= DATE '2024-01-01'
       AND st.insert_time < DATE '2024-06-01'
       AND NOT EXISTS (
-          SELECT 1 FROM record r 
-          WHERE r.ctrl_no = st.ctrl_no AND r.g_no = st.g_no
-      )
-      AND REGEXP_LIKE(st.tag, 'mid|large')
+        SELECT 1 FROM data.record r 
+        WHERE r.ctrl_no = st.ctrl_no AND r.g_no = st.g_no)
+      AND (REGEXP_LIKE(st.tag, 'mid') OR REGEXP_LIKE(st.tag, 'large'))
 ),
 aggregated AS (
     SELECT 
         d.date_val,
-        d.date_val - TRUNC(SYSDATE) AS days_diff,
+        d.date_val - DATE '2024-01-01' AS days_from_start,
         t.val_range,
         COUNT(*) AS record_count,
-        COUNT(*) * 100.0 / SUM(COUNT(*)) OVER () AS pct
+        COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (PARTITION BY d.date_val) AS pct
     FROM date_dim d
     LEFT JOIN tagged t ON t.dt = d.date_val
-    WHERE t.dt IS NOT NULL
+    WHERE t.val_range IS NOT NULL
     GROUP BY d.date_val, t.val_range
 )
 SELECT *
