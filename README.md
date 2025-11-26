@@ -20,7 +20,7 @@ Production SQL queries for analyzing buyer behavior, delivery performance, and t
 
 ## 📋 Files Overview
 
-### 1️⃣ `buyer_secondhand_analysis.sql` (Oracle)
+### 1 `buyer_secondhand_analysis.sql` (Oracle)
 **Purpose**: Identify high-value repeat buyers with 90%+ second-hand purchase ratio
 
 **Key Outputs**:
@@ -37,7 +37,7 @@ Production SQL queries for analyzing buyer behavior, delivery performance, and t
 
 ---
 
-### 2️⃣ `transaction_value_distribution.sql` (Oracle)
+### 2 `transaction_value_distribution.sql` (Oracle)
 **Purpose**: Daily distribution of transaction values by range (Jan-May 2024)
 
 **Key Outputs**:
@@ -53,7 +53,7 @@ Production SQL queries for analyzing buyer behavior, delivery performance, and t
 
 ---
 
-### 3️⃣ `delivery_performance.sql` (Presto/Trino)
+### 3 `delivery_performance.sql` (Presto/Trino)
 **Purpose**: Regions exceeding 70th percentile for international delivery GMV ratio
 
 **Key Outputs**:
