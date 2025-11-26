@@ -10,7 +10,8 @@ FROM table1 CROSS JOIN table2
 
 -- Window functions
 -- Previous row: LAG(column, offset, default) OVER (PARTITION BY group ORDER BY sort)
--  Aggregates:   AGG_FUNC(column) OVER (PARTITION BY group ORDER BY sort)
+-  Aggregates:   AGG_FUNC(column) OVER (PARTITION BY group1, group2 ORDER BY sort) 
+-  AGG_FUNC():   MIN() / MAX() / COUNT() / SUM() / AVG()
 
 -- Scalar subquery:
 column / (SELECT AGG_FUNC(column) FROM table WHERE condition)
