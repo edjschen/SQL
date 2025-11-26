@@ -22,8 +22,7 @@ WITH goods_list AS (
     SELECT g_no
     FROM data.goods_file 
     WHERE condition <> 'B'
-        OR name LIKE '%used%'
-        OR name LIKE '%second_handed%'
+        AND (name LIKE '%used%' OR name LIKE '%second_handed%')
 ),
 buyer_data AS (
     SELECT 
@@ -62,7 +61,7 @@ SELECT
     SUM(GMV_second) AS total_GMV_second,
     CASE WHEN SUM(GMV) > 0 THEN SUM(GMV_second) / NULLIF(SUM(GMV), 0) ELSE 0 END AS ratio,
     SUM(CASE WHEN purchase_count >= 2 THEN 1 ELSE 0 END) AS total_repurchase,
-    SUM(CASE WHEN second_ >= 2 THEN 1 ELSE 0 END) AS second_hand_repurchase
+    SUM(CASE WHEN second_purchase_count >= 2 THEN 1 ELSE 0 END)
 FROM buyer_data
 GROUP BY class, name, sex, age_range
 HAVING 
